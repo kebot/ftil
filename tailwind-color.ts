@@ -1,61 +1,44 @@
 /**
  * this script will gives you nearest color in tailwind colors
  */
+import { nearest, differenceCiede2000, parse } from 'https://deno.land/x/culori@v2.0.3/index.js'
+import tailwindColorConfig from 'https://esm.sh/tailwindcss/colors'
 
-// deno run --unstable --allow-read --allow-env ./tailwind-color.ts
-import { createRequire } from 'https://deno.land/std@0.123.0/node/module.ts';
-import { nearest, differenceCiede2000, parse } from 'https://deno.land/x/culori@v2.0.3/index.js';
+function getTailwindColors(): { [key: string]: string } {
+  const colorsByName: { [key: string]: string } = {}
 
-type HexColor = string;
+  for (const key of Object.keys(tailwindColorConfig)) {
+    const descriptor = Object.getOwnPropertyDescriptor(tailwindColorConfig, key)
 
-type TailwindColors = {
-  [key: string]:
-    | HexColor
-    | {
-        [key: string]: HexColor;
-      };
-};
-
-function getTailwindColors() {
-  const require = createRequire(import.meta.url);
-  const colors: TailwindColors = require('tailwindcss/colors');
-  const colorsByName: { [key: string]: HexColor } = {};
-
-  for (const key of Object.keys(colors)) {
-    const descriptor = Object.getOwnPropertyDescriptor(colors, key);
     if (descriptor && descriptor.value) {
-      const value = colors[key];
+      const value = tailwindColorConfig[key as keyof typeof tailwindColorConfig]
 
       if (typeof value === 'string') {
-        colorsByName[key] = value;
+        colorsByName[key] = value
       } else {
         for (const [subKey, subValue] of Object.entries(value)) {
-          colorsByName[`${key}-${subKey}`] = subValue;
+          colorsByName[`${key}-${subKey}`] = subValue
         }
       }
     }
   }
 
-  return colorsByName;
+  return colorsByName
 }
 
-let colors: ReturnType<typeof getTailwindColors> = {};
-
-try {
-  colors = getTailwindColors();
-} catch (e) {
-  console.error('Can not find tailwindcss, please run this script in your tailwind project!')
-}
-
+const colors = getTailwindColors()
 const nearestNamedColors = nearest(
   Object.keys(colors).filter((name) => !!parse(colors[name])),
   differenceCiede2000(),
   (name: string) => colors[name]
-);
+)
 
-const inputColor = parse(Deno.args[0]);
+const inputColor = parse(Deno.args[0])
 
-console.log('inputColor -> ', inputColor);
+if (!inputColor) {
+  console.log('Please provide a valid color')
+  Deno.exit(1)
+}
 
-console.log('Cloest Tailwind Colors -> ', nearestNamedColors(inputColor, 3));
-
+console.log('inputColor -> ', inputColor)
+console.log('Nearest Tailwind Colors -> ', nearestNamedColors(inputColor, 3))

@@ -1,7 +1,11 @@
 # Usage
 
 ```bash
-deno install --unstable --allow-read --allow-env <path-or-url-to-this-script>
+# try without install
+deno run --unstable --allow-read --allow-env https://raw.githubusercontent.com/kebot/ftil/main/tailwind-color.ts "#fbfbfb"
+
+# install
+deno install --unstable --allow-read --allow-env https://raw.githubusercontent.com/kebot/ftil/main/tailwind-color.ts
 
 # under your tailwind project 
 tailwind-color "color-name"
